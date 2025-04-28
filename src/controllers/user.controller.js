@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
@@ -110,7 +111,7 @@ export const placeOrder = asyncHandler(async (req, res) => {
         }
 
         const price = product.cost;
-        const totalPrice = price*quantity
+        const totalPrice = price * quantity
 
         const newOrder = new Order({
             userId,
@@ -119,6 +120,8 @@ export const placeOrder = asyncHandler(async (req, res) => {
             price,
             totalPrice: totalPrice,
         })
+
+        await newOrder.save()
 
         const newStock = product.stockQuantity - quantity
         product.stockQuantity = newStock
@@ -131,6 +134,69 @@ export const placeOrder = asyncHandler(async (req, res) => {
             )
 
     } catch (error) {
-        throw new ApiError(404, "Error while placing order!!!" || error.message)
+        throw new ApiError(404,error.message || "Error while placing order!!!")
+    }
+})
+
+export const getOrder = asyncHandler(async (req, res) => {
+    const { orderId } = req.query;
+    const userId = req.userId
+
+    // console.log(orderId);
+    // console.log(userId);
+
+    try {
+        if (!orderId) {
+            throw new ApiError(404, "Order Id is neccessary for product detail!!!")
+        }
+
+        // console.log("Checking if Order exists...");
+        // const orderExist = await Order.findOne({ _id: new mongoose.Types.ObjectId(orderId) });
+        // console.log(orderExist);
+
+        const order = await Order.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(orderId),
+                    userId: new mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: "$productDetails"
+            },
+            {
+                $project: {
+                    _id: 1,
+                    productId: 1,
+                    quantity: 1,
+                    totalPrice: 1,
+                    itemName:"$productDetails.itemName",
+                    cost: "$productDetails.cost"
+                }
+            }
+        ])
+
+        // console.log(order);
+
+        if (!order.length) {
+            throw new ApiError(404, "Order not found!!!")
+        }
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, order[0], "Order fetched successfully!!!")
+            )
+
+    } catch (error) {
+        throw new ApiError(404, error.message)
     }
 })
