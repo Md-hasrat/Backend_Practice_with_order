@@ -134,7 +134,7 @@ export const placeOrder = asyncHandler(async (req, res) => {
             )
 
     } catch (error) {
-        throw new ApiError(404,error.message || "Error while placing order!!!")
+        throw new ApiError(404, error.message || "Error while placing order!!!")
     }
 })
 
@@ -178,7 +178,7 @@ export const getOrder = asyncHandler(async (req, res) => {
                     productId: 1,
                     quantity: 1,
                     totalPrice: 1,
-                    itemName:"$productDetails.itemName",
+                    itemName: "$productDetails.itemName",
                     cost: "$productDetails.cost"
                 }
             }
@@ -200,3 +200,5 @@ export const getOrder = asyncHandler(async (req, res) => {
         throw new ApiError(404, error.message)
     }
 })
+
+
