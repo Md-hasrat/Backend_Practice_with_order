@@ -41,7 +41,7 @@ export const createProduct = asyncHandler(async (req, res) => {
         return res
             .status(201)
             .json(
-                new ApiResponse(201, newProduct, "Warehouse created successfully!!!")
+                new ApiResponse(201, newProduct, "Product created successfully!!!")
             )
     } catch (error) {
         throw new ApiError(404, "Error while creating warehouse" || error.message)
