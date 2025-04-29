@@ -195,7 +195,6 @@ export const deleteUser = asyncHandler(async (req, res) => {
         const { userId } = req.body
         console.log(userId);
 
-
         const user = await User.findByIdAndDelete(userId)
         console.log(user);
         
