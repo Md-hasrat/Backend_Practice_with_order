@@ -282,7 +282,6 @@ export const getOrderList = asyncHandler(async (req, res) => {
 
         // console.log(admin);
 
-
         if (!admin || admin.role !== "ADMIN") {
             throw new ApiError(404, "Unauthorized!!!")
         }
@@ -316,6 +315,7 @@ export const getOrderList = asyncHandler(async (req, res) => {
                     quantity: 1,
                     price: 1,
                     totalPrice: 1,
+                    orderStatus: 1,
                     itemName: "$productDetails.itemName",
                     cost: "$productDetails.cost",
                     email: "$userDetails.email"
@@ -327,12 +327,53 @@ export const getOrderList = asyncHandler(async (req, res) => {
         if (order.length === 0) {
             throw new ApiError(404, "Order not found!!!")
         }
+
         return res
             .status(200)
             .json(
                 new ApiResponse(200, order, "Order fetched successfully!!!")
             )
+
     } catch (error) {
         throw new ApiError(404, error.message || "Error while finding the order!!!")
     }
 })
+
+
+export const changeOrderStatus  = asyncHandler(async(req,res)=>{
+
+    const {orderStatus,orderId} = req.body
+    const adminId = req.adminId
+
+    // console.log(orderId);
+    
+    try {
+        const admin = await Admin.findById(adminId)
+        
+        if(!admin || admin.role !== "ADMIN"){
+            throw new ApiError(404,"Unauthorized")
+        }
+
+        if(!orderId || !orderStatus){
+            throw new ApiError(404,"OrderId or OrderStatus is required!!")
+        }
+
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            {orderStatus:orderStatus},
+            {new:true}
+        )
+        
+        if(!order){
+            throw new ApiError(404,"Order not found!!!")
+        }
+
+        return res
+            .status(200)
+            .json(new ApiResponse(200,order,"Order Updated successfully!!!"))
+    } catch (error) {
+        throw new ApiError(404,"Order not found!!!")
+    }
+})
+
+
