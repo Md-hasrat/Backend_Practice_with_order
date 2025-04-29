@@ -1,6 +1,6 @@
 
 import express, { Router } from 'express'
-import { adminLogin, adminSignUp, deleteUser, getAllUser, getOrderList, getUserOrder, updateStatus } from '../controllers/admin.controller.js';
+import { adminLogin, adminSignUp, changeOrderStatus, deleteUser, getAllUser, getOrderList, getUserOrder, updateStatus } from '../controllers/admin.controller.js';
 import { isAdminLogedIn } from '../middleware/jwt.js';
 
 
@@ -13,6 +13,7 @@ router.post('/updateStatus',isAdminLogedIn,updateStatus)
 router.post('/deleteUser',isAdminLogedIn,deleteUser)
 router.get('/getUserOrder',isAdminLogedIn,getUserOrder)
 router.get('/getOrderList',isAdminLogedIn,getOrderList)
+router.post('/changeOrderStatus',isAdminLogedIn,changeOrderStatus)
 
 
 export default router
