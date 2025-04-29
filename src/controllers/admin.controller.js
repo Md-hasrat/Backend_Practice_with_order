@@ -178,5 +178,39 @@ export const updateStatus = asyncHandler(async (req, res) => {
 })
 
 
- 
+export const deleteUser = asyncHandler(async (req, res) => {
+    const adminId = req.adminId
+
+    try {
+        const admin = await Admin.findById(adminId)
+
+        if (!admin) {
+            throw new ApiError(404, "Admin not found!!!")
+        }
+
+        if (admin.role !== "ADMIN") {
+            throw new ApiError(404, "Unauthorized!!!")
+        }
+
+        const { userId } = req.body
+        console.log(userId);
+
+
+        const user = await User.findByIdAndDelete(userId)
+        console.log(user);
+        
+        if (!user) {
+            throw new ApiError(404, "User not found!!!")
+        }
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, user, "User deleted successfully!!!")
+            )
+    } catch (error) {
+        throw new ApiError(404, error.message || "Error while deleting the user!!!")
+    }
+})
+
 
