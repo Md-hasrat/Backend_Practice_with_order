@@ -1,4 +1,6 @@
+import mongoose, { mongo } from "mongoose";
 import Admin from "../models/admin.model.js";
+import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
@@ -197,7 +199,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
         const user = await User.findByIdAndDelete(userId)
         console.log(user);
-        
+
         if (!user) {
             throw new ApiError(404, "User not found!!!")
         }
@@ -213,3 +215,125 @@ export const deleteUser = asyncHandler(async (req, res) => {
 })
 
 
+export const getUserOrder = asyncHandler(async (req, res) => {
+    const adminId = req.adminId
+    const { orderId } = req.query
+
+    try {
+
+        const admin = await Admin.findById(adminId)
+
+        if (!admin || admin.role !== "ADMIN") {
+            throw new ApiError(404, "Unauthorized!!!")
+        }
+
+        const order = await Order.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(orderId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: "$productDetails"
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $unwind: "$userDetails"
+            },
+        ])
+
+        if (order.length === 0) {
+            throw new ApiError(404, "Order not found!!!")
+        }
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, order[0], "Order fetched successfully!!!")
+            )
+
+    } catch (error) {
+        throw new ApiError(404, error.message || "Error while getting the user order!!!")
+    }
+})
+
+
+export const getOrderList = asyncHandler(async (req, res) => {
+
+    const adminId = req.adminId
+
+    try {
+        const admin = await Admin.findById(adminId)
+
+        // console.log(admin);
+
+
+        if (!admin || admin.role !== "ADMIN") {
+            throw new ApiError(404, "Unauthorized!!!")
+        }
+
+        const order = await Order.aggregate([
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: "$productDetails"
+            },
+
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $unwind: "$userDetails"
+            },
+            {
+                $project: {
+                    _id: 1,
+                    quantity: 1,
+                    price: 1,
+                    totalPrice: 1,
+                    itemName: "$productDetails.itemName",
+                    cost: "$productDetails.cost",
+                    email: "$userDetails.email"
+
+                }
+            }
+        ])
+
+        if (order.length === 0) {
+            throw new ApiError(404, "Order not found!!!")
+        }
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, order, "Order fetched successfully!!!")
+            )
+    } catch (error) {
+        throw new ApiError(404, error.message || "Error while finding the order!!!")
+    }
+})
