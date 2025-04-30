@@ -15,6 +15,9 @@ const sellerSchema = new Schema({
         type: Number,
         required: true
     },
+    address:{
+        type: String
+    },
     accessToken: {
         type: String
     }
