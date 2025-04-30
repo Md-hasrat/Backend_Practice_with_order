@@ -12,11 +12,14 @@ const sellerSchema = new Schema({
         required: true
     },
     phone: {
-        type: Number,
-        required: true
+        type: Number
     },
     address:{
         type: String
+    },
+    password: {
+        type: String,
+        required: true
     },
     accessToken: {
         type: String
