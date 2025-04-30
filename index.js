@@ -5,6 +5,7 @@ import adminRoute from './src/routes/admin.route.js'
 import userRoute from './src/routes/user.route.js'
 import warehouseRoute from './src/routes/warehouse.route.js'
 import productRoute from './src/routes/product.route.js'
+import sellerRoute from './src/routes/seller.route.js'
 
 
 const app = express()
@@ -23,6 +24,7 @@ app.use('/api/admin',adminRoute)
 app.use('/api/user',userRoute)
 app.use('/api/warehouse',warehouseRoute)
 app.use('/api/product',productRoute)
+app.use('/api/seller',sellerRoute)
 
 app.listen(3000,()=>{
     console.log('Server is running on port 3000');
